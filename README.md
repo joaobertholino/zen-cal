@@ -1,55 +1,101 @@
-# Zen-Cal — integração com Waybar e Hyprland
+# Zen-Cal — calendário da Waybar no Hyprland
 
-Configuração pessoal para Arch Linux, mantida como submódulo de `joaobertholino/dotfiles` em `.config/zen-cal`.
+Integração pessoal do calendário para o desktop Gentoo, mantida como submódulo de [dotfiles](https://github.com/joaobertholino/dotfiles) em `~/.config/zen-cal`. Conferida em **25/10/2026**.
+
+O repositório contém tema, script e regra de janela. O executável do calendário é instalado separadamente.
 
 ## Aparência e comportamento
 
-- Janela flutuante de **320 × 240 pixels**, centralizada abaixo do relógio.
-- Fundo preto, cantos retos e borda fina, herdados do tema do Hyprland e Alacritty.
-- Paleta de texto em branco e cinza; o dia atual usa fundo cinza.
-- Executa diretamente no Alacritty, sem iniciar a sessão tmux do terminal.
-
-## Controles
-
-- Clique esquerdo no relógio: abre ou fecha o calendário.
-- Clique direito: alterna o formato do relógio (configurado na Waybar).
-- `h` / `l` ou setas esquerda / direita: mês anterior / seguinte.
-- `k` / `j` ou setas cima / baixo: ano anterior / seguinte.
-- `r` / Enter: volta para hoje.
-- `q` / Esc: fecha o calendário.
+- Janela flutuante de **320 × 240 pixels**, centralizada horizontalmente, a 28 px do topo.
+- Classe `TUI.zencal`, título `Calendário`, cantos retos e borda de 1 px.
+- Fundo preto e texto branco/cinza; o dia atual usa fundo cinza `#737373`.
+- Alacritty dedicado, com preenchimento de 8 × 6 e dimensões iniciais de 38 colunas × 14 linhas, ajustadas pela regra do compositor.
+- O calendário executa diretamente no Alacritty, sem iniciar a sessão tmux usada pelo terminal principal.
 
 ## Arquivos
 
 | Arquivo | Função |
 | --- | --- |
-| `zen-cal.conf` | Cores lidas pelo calendário |
-| `toggle.sh` | Abre ou fecha a janela dedicada do Alacritty |
-| `hyprland.lua` | Regra de tamanho e posição para a configuração Lua do Hyprland |
+| `zen-cal.conf` | Paleta usada pelo calendário |
+| `toggle.sh` | Fecha processos `zen-cal` do usuário ou abre o calendário |
+| `hyprland.lua` | Regra Lua de classe, tamanho e posicionamento |
+
+## Controles
+
+- Clique esquerdo no relógio da Waybar: abrir ou fechar.
+- `h` / `l` ou setas esquerda / direita: mês anterior / seguinte.
+- `k` / `j` ou setas cima / baixo: ano anterior / seguinte.
+- `r` / Enter: voltar para hoje.
+- `q` / Esc: fechar.
+
+O botão direito da Waybar seleciona o formato alternativo do relógio (`format-alt-click: 3`). Na configuração principal atual, `format` e `format-alt` são iguais; por isso essa alternância não muda o texto exibido.
+
+O script fecha todos os processos com nome exato `zen-cal` pertencentes ao usuário. Isso também afeta uma instância do calendário aberta manualmente.
 
 ## Instalação
 
-Dependências: Hyprland com configuração Lua, Waybar, Alacritty, Bash, `pgrep` e `notify-send` (para informar a ausência do executável).
+Dependências: Hyprland com API Lua `hl`, Waybar, Alacritty, Bash, `pgrep`/`kill` e `notify-send` para informar quando o executável está ausente.
 
-Instale o executável oficial em `~/.local/bin/zen-cal` e dê permissão de execução. Posicione este repositório em `~/.config/zen-cal`.
+No repositório principal:
 
-No módulo `clock` da Waybar, defina `on-click` como o caminho absoluto de `~/.config/zen-cal/toggle.sh`. Para alternar o formato com o botão direito, use `"format-alt-click": 3`.
+```sh
+git submodule update --init --recursive .config/zen-cal
+```
 
-Na configuração Lua do Hyprland, carregue a regra:
+Para instalação independente, faça backup do destino existente e clone em uma pasta vazia:
+
+```sh
+git clone git@github.com:joaobertholino/zen-cal.git "$HOME/.config/zen-cal"
+```
+
+Instale o binário em `~/.local/bin/zen-cal` e confirme a permissão de execução:
+
+```sh
+test -x "$HOME/.local/bin/zen-cal"
+"$HOME/.config/zen-cal/toggle.sh"
+```
+
+O teste do script abre o calendário ou fecha uma instância já aberta.
+
+### Integração da Waybar
+
+No módulo `clock`, ajuste o caminho para sua home:
+
+```json
+{
+  "on-click": "/home/joaob/.config/zen-cal/toggle.sh",
+  "format-alt-click": 3
+}
+```
+
+Esse trecho deve ser incorporado ao módulo existente, preservando suas demais opções. O script usa `alacritty` pelo `PATH`; na sessão desta máquina ele está em `/opt/hyprland/bin`.
+
+### Integração do Hyprland
+
+O arquivo `.config/hypr/modules/rules.lua` do repositório principal carrega:
 
 ```lua
 dofile(os.getenv("HOME") .. "/.config/zen-cal/hyprland.lua")
 ```
 
-Recarregue o Hyprland e a Waybar após alterar essas integrações.
+A regra usa a API Lua `hl.window_rule`. Para outra versão/sintaxe do Hyprland, adapte a regra antes de usá-la. Recarregue o compositor com `hyprctl reload` e recarregue a Waybar após alterar o módulo do relógio. Um clique posterior aplica mudanças feitas em `toggle.sh` e no tema.
 
-## Executável oficial
+## Binário instalado
 
-Fonte: https://github.com/beaterblank/zen-cal
+Origem: [beaterblank/zen-cal](https://github.com/beaterblank/zen-cal).
+Versão registrada da instalação: **v1.0.2**.
+Caminho: `~/.local/bin/zen-cal`, fora deste repositório.
 
-Versão instalada: **v1.0.2**. O executável fica fora deste repositório.
+SHA-256 do binário local, conferido em 25/10/2026:
 
-SHA-256 verificado: `563ea80aaaa72eeac443e199bf3766dc657c34cce4b971fe0555a66a83b3e672`.
+```text
+563ea80aaaa72eeac443e199bf3766dc657c34cce4b971fe0555a66a83b3e672
+```
 
-## Atualizações
+Uma atualização legítima do binário pode alterar esse hash; atualize este registro depois de conferir a nova origem.
 
-Publique primeiro as alterações neste repositório e depois atualize a referência do submódulo no `dotfiles`.
+## Manutenção e Git
+
+A cópia local utiliza a branch `main` e o remoto `personal`. O script `~/.local/bin/auto-push.sh` do projeto principal publica este submódulo antes de atualizar a referência no pai, a cada hora pelo systemd do usuário.
+
+Para manutenção manual, publique primeiro o commit deste repositório e depois atualize seu gitlink em `dotfiles`. A configuração não instala nem atualiza o executável do calendário. Para recuperação, restaure uma versão conhecida dos três arquivos e recarregue as integrações afetadas.
