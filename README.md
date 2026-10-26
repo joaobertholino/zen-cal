@@ -1,6 +1,6 @@
 # Zen-Cal — calendário da Waybar no Hyprland
 
-Integração pessoal do calendário para o desktop Gentoo, mantida como submódulo de [dotfiles](https://github.com/joaobertholino/dotfiles) em `~/.config/zen-cal`. Conferida em **25/10/2026**.
+Integração pessoal do calendário para o desktop Gentoo, mantida como submódulo de [dotfiles](https://github.com/joaobertholino/dotfiles) em `~/.config/zen-cal`. Integração com a sessão atualizada em **26/10/2026**.
 
 O repositório contém tema, script e regra de janela. O executável do calendário é instalado separadamente.
 
@@ -69,6 +69,18 @@ No módulo `clock`, ajuste o caminho para sua home:
 ```
 
 Esse trecho deve ser incorporado ao módulo existente, preservando suas demais opções. O script usa `alacritty` pelo `PATH`; na sessão desta máquina ele está em `/opt/hyprland/bin`.
+
+Na instalação Gentoo atual, a Waybar roda como `waybar.service`, habilitada em `hyprland-session.target` e encerrada junto com a sessão gráfica. O helper de sessão importa o `PATH` e o ambiente Wayland antes de iniciar o conjunto. O calendário continua sendo aberto por clique: não tem daemon nem unidade de autostart próprios.
+
+Depois de alterar o módulo do relógio, use a unidade que já controla o painel:
+
+```sh
+systemctl --user reload waybar.service
+systemctl --user status waybar.service
+journalctl --user -u waybar.service -b
+```
+
+Se for necessário reiniciar o painel, use `systemctl --user restart waybar.service`; não execute outra Waybar manualmente nem adicione `exec-once` duplicado. As unidades e o helper são componentes locais externos a este submódulo, descritos no [README principal](https://github.com/joaobertholino/dotfiles#sessão-notificações-e-calendário).
 
 ### Integração do Hyprland
 
